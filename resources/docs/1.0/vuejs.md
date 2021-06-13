@@ -24,18 +24,17 @@ This project only use Bootrsap CSS, NO additional CSS
 
                     <div class="card-body">
                         <form @submit="formSubmit" enctype="multipart/form-data">
-                            <!-- <input type="file" class="form-control mb-2" ref="file" v-on:change="onChange" :disabled="working" accept="image/png, image/gif, image/jpeg"> -->
-                            <input type="file" class="form-control mb-2" ref="file" v-on:change="onChange" :disabled="working">
-                            <small class="form-text text-right">Max File size: 10MB, Available types:JPEG/JPG/PNG/GIF</small>
+                            <input type="file" class="form-control mb-2" ref="file" v-on:change="onChange" :disabled="working" accept="image/png, image/gif, image/jpeg">
+                            <small class="form-text text-right">Max File size: 2MB, Available types:JPEG/JPG/PNG/GIF</small>
                             <button class="btn btn-success btn-block" :disabled="working || !file">Upload</button>
 
                             <div
                               class="progress-bar progress-bar-info progress-bar-striped"
                               role="progressbar"
-                              :aria-valuenow="progress"
+                              :aria-valuenow="uploadPercentage"
                               aria-valuemin="0"
                               aria-valuemax="100"
-                              :style="{ width: uploadPercentage + '%' }"
+                              :style="{ width: uploadPercentage + '%', 'background-color': barcolor }"
                             >
                               {{ uploadPercentage }}%
                             </div>
@@ -51,7 +50,7 @@ This project only use Bootrsap CSS, NO additional CSS
         <div v-if="!images.length" class="alert alert-info">No images added yet, please upload images first.</div>
         <div class="row text-center text-lg-left">
             <div class="col-lg-3 col-md-4 col-6" v-for="image in images">
-              <a href="#" class="d-block mb-4 h-100">
+              <a v-bind:href="image" class="d-block mb-4 h-100" target="_blank">
                     <img v-bind:src="image" class="img-fluid" />
                   </a>
             </div>
@@ -67,7 +66,7 @@ This project only use Bootrsap CSS, NO additional CSS
 ## Script Section
 ### resources/js/components/UploadComponent.vue
 ```js
-export default {
+    export default {
         data() {
             return {
                 images: [],
@@ -77,6 +76,13 @@ export default {
                 working: false
             };
         },
+        computed: {
+            barcolor: function () {
+              if(this.uploadPercentage == 100)
+                return '#7ed7a4';
+              return '#3490dc';
+            }
+          },
         methods: {
             finished(){ // Process the form after the request has been completly finished
                 this.working = false;
@@ -87,6 +93,15 @@ export default {
             },
             onChange(e) {
                 this.file = e.target.files[0];
+
+                if(this.file['type'] !== 'image/jpeg' && this.file['type'] !== 'image/jpg' && this.file['type'] !=='image/png' && this.file['type'] !=='image/gif'){
+                    this.error = 'File must be an image type jpeg/jpg/png/gif';
+                    this.resetForm();
+                }
+            },
+            resetForm(){
+                this.$refs.file.value=null;
+                this.file = null;
             },
             formSubmit(e) {
                 e.preventDefault();
@@ -95,8 +110,7 @@ export default {
                 data.append('image', this.file);
 
                 //Reset and block form
-                this.$refs.file.value=null;
-                this.file = null;
+                this.resetForm();
                 this.error = null;
                 this.working = true;
                 this.uploadPercentage = 0;

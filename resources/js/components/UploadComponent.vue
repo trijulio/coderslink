@@ -71,6 +71,15 @@
             },
             onChange(e) {
                 this.file = e.target.files[0];
+
+                if(this.file['type'] !== 'image/jpeg' && this.file['type'] !== 'image/jpg' && this.file['type'] !=='image/png' && this.file['type'] !=='image/gif'){
+                    this.error = 'File must be an image type jpeg/jpg/png/gif';
+                    this.resetForm();
+                }
+            },
+            resetForm(){
+                this.$refs.file.value=null;
+                this.file = null;
             },
             formSubmit(e) {
                 e.preventDefault();
@@ -79,8 +88,7 @@
                 data.append('image', this.file);
 
                 //Reset and block form
-                this.$refs.file.value=null;
-                this.file = null;
+                this.resetForm();
                 this.error = null;
                 this.working = true;
                 this.uploadPercentage = 0;
